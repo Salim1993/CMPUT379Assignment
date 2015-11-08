@@ -1,0 +1,15 @@
+Task list:
+
+1. Timeouts for different proccesses.
+
+2. May have to write Parent pid to logfile.
+
+3. User has hangup signal (SIGHUP) to parent process  which forces procnanny to re-read the configuration file (which has the same filename). Then, the parent procnanny should print to both stdout and the logfile the message
+
+4. user is allowed to send an interrupt signal (SIGINT) to the parent procnanny process which forces procnanny to close any open files that it might have, kill each of its children (even if they are currently monitoring a process), and free up all resources (e.g., memory, signals from children that have exited). In essence, an interrupt signal is used to cleanly exit from the parent procnanny process. Once all of the cleaning up has been completed, the parent procnanny process prints the following output to both stdout and the logfile (note the count of the number of processes killed) and exits:
+
+5. Every 5 seconds, procnanny checks all processes on the system that belong to the user running the program (i.e., do not hardcode the username). If one of these processes is running a monitored program, as specified by the configuration file, then procnanny will tell a child process to continue overseeing the monitored process.
+
+6. There should be one procnanny child process per monitored process.  If a child process does not exist or is not available, the parent process should fork off a child process. If a child process is not currently monitoring a process, the parent process should re-use that child process. Child should never be killed.
+
+7. If the child receives a PID value of -1, then the child exits
