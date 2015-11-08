@@ -18,12 +18,36 @@
 
  struct Pipes
 {
-   int rdwr[2];   // 0 = read, 1 = write
+    //int rdwr[2];   // 0 = read, 1 = write
+	int rd[2];		//child will read 
+	int wr[2];		//child will write
+};
+
+struct child{
+	int childPID;
+	int status = 1;
+	//might need address to pipe;
+	struct process proc;
+};
+
+struct pipeMessage{
+	char type[4]; // This is the type of message
+	//NEW for new child to manage pid (parent to child)
+	//OLD for new child to process (child to parent)
+	//KIL child killed process (child to parent)
+	//GON child didnt kill process (child to parent)
+	struct process procMessage;
+};
+
+struct process
+{
+   int  processID;
+   char  name[256];
+   int   time;
 };
 
 
 int main( void ) {
-
 
 	pid_t parentPID = getpid();
 	int i;
@@ -58,7 +82,6 @@ int main( void ) {
 			printf("this is the iteration %d and the pid is %d\n",i,pid );
 		}
 	}
-	sleep(1);
 	int j;
 	for(j = 0; j < counter; j++){
 		//close(fd[j][1]);
