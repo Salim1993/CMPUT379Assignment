@@ -17,6 +17,7 @@ http://www.cs.umd.edu/~srhuang/teaching/cmsc212/gdb-tutorial-handout.pdf
 */
 
 int numberProcessesKilled;
+char *PROCNANNYLOGS = "logfile.log";
 
 struct process
 {
@@ -32,10 +33,8 @@ void main(int argc, char *argv[])
 {
 	//initial configuration
 	char fileInput[128][256];
-	int counter = 0;
 	int processPID;
 	int killTime;
-	char *PROCNANNYLOGS = "logfile.log";
 
 	struct process processList[128];
 
@@ -46,147 +45,144 @@ void main(int argc, char *argv[])
     char timeString[80];
 
     killOtherProcnanny();
- 
- 	//opening file
-	FILE *fp = fopen(argv[1],"r"); // read mode
- 
-	if( fp == NULL ){
-    	printf("Error while opening the file.\n");
-    }
 
-	while (fgets (fileInput[counter], 256, fp)) {
-    	counter++;
-	}
-	if (ferror(fp)) {
-    	fprintf(stderr,"Oops, error reading the file\n");
-	}	
-	
-    fclose(fp);
+    while(1){
+	 	int counter = 0;
+	 	//opening file
+		FILE *fp = fopen(argv[1],"r"); // read mode
+	 
+		if( fp == NULL ){
+	    	printf("Error while opening the file.\n");
+	    }
 
-    FILE *logRewrite = fopen(PROCNANNYLOGS, "w");
-    fclose(logRewrite);
-
-    char processName[256] = "";
-
-    //creating pipe command
-    char origCommand[] = "pgrep ";
-    char command[256] = "pgrep ";
-
-	char procPID[256];
-
-    int i;
-    int found;
-    char *token;
-    int processCounter = 0;
-
-    for(i=0;i < counter; i++){
-    	//iterating input for different process names
-    	strcpy(command,origCommand);
-    	
-    	token = strtok(fileInput[i], " ");
-    	strcpy(processName,token);
-    	token = strtok(NULL, " ");
-    	killTime = atoi(token);
-
-    	strtok(processName, "\n");
-    	strcat(command, processName);
-
-    	FILE *file;
-    	found = 0;
-    	
-    	//getting time
-    	currentTime = time(NULL);
-    	timeInfo = localtime(&currentTime);
-    	strftime (timeString,80, "[%c]", timeInfo);
-
-		file = popen(command, "r");
-		if (file == NULL){
-		//do some eror stuff
+		while (fgets (fileInput[counter], 256, fp)) {
+	    	counter++;
 		}
-		while(fgets(procPID, 256, file) != NULL){
-			// fork child for each process id found
-			found = 1;
-			processPID = atoi(procPID);
-			
-			processList[processCounter].processID = processPID;
-			strcpy(processList[processCounter].name, processName);
-			processList[processCounter].time = killTime;
+		if (ferror(fp)) {
+	    	fprintf(stderr,"Oops, error reading the file\n");
+		}	
+		
+	    fclose(fp);
 
-			time(&currentTime);
-    		timeInfo = localtime(&currentTime);
-    		strftime (timeString,80, "[%c]", timeInfo);
+	    FILE *logRewrite = fopen(PROCNANNYLOGS, "w");
+	    fclose(logRewrite);
 
-			FILE *logfile = fopen(PROCNANNYLOGS, "a");
-			strtok(procPID,"\n");
-			fprintf(logfile,"[%s] Info: Initializing monitoring of process '%s'(PID %s).\n",timeString,processName,procPID);
-			fclose(logfile);
+	    char processName[256] = "";
 
-			pid = fork();
-			if(pid < 0){
-    			//err_sys("fork error");
-    		}
-			else if (pid == 0 ) {
-				sleep(processList[processCounter].time);
-				kill(processList[processCounter].processID,SIGKILL);
+	    //creating pipe command
+	    char origCommand[] = "pgrep ";
+	    char command[256] = "pgrep ";
+
+		char procPID[256];
+
+	    int i;
+	    int found;
+	    char *token;
+	    int processCounter = 0;
+
+	    for(i=0;i < counter; i++){
+	    	//iterating input for different process names
+	    	strcpy(command,origCommand);
+	    	
+	    	token = strtok(fileInput[i], " ");
+	    	strcpy(processName,token);
+	    	token = strtok(NULL, " ");
+	    	killTime = atoi(token);
+
+	    	token = strtok(processName, "\n");
+	    	strcat(command, processName);
+
+	    	FILE *file;
+	    	found = 0;
+	    	
+	    	//getting time
+	    	currentTime = time(NULL);
+	    	timeInfo = localtime(&currentTime);
+	    	strftime (timeString,80, "[%c]", timeInfo);
+
+			file = popen(command, "r");
+			if (file == NULL){
+			//do some eror stuff
+			}
+			while(fgets(procPID, 256, file) != NULL){
+				// fork child for each process id found
+				found = 1;
+				processPID = atoi(procPID);
+				
+				processList[processCounter].processID = processPID;
+				strcpy(processList[processCounter].name, processName);
+				processList[processCounter].time = killTime;
 
 				time(&currentTime);
-    			timeInfo = localtime(&currentTime);
-    			strftime (timeString,80, "[%c]", timeInfo);
+	    		timeInfo = localtime(&currentTime);
+	    		strftime (timeString,80, "[%c]", timeInfo);
 
 				FILE *logfile = fopen(PROCNANNYLOGS, "a");
 				strtok(procPID,"\n");
-				fprintf(logfile, "[%s] Action:PID %d (%s) killed after %d seconds.\n",timeString, processList[processCounter].processID, processList[processCounter].name, processList[processCounter].time);
-				fflush(logfile);
+				fprintf(logfile,"[%s] Info: Initializing monitoring of process '%s'(PID %s).\n",timeString,processName,procPID);
 				fclose(logfile);
-				exit(EXIT_SUCCESS);
+
+				pid = fork();
+				if(pid < 0){
+	    			//err_sys("fork error");
+	    		}
+				else if (pid == 0 ) {
+					sleep(processList[processCounter].time);
+					kill(processList[processCounter].processID,SIGKILL);
+
+					time(&currentTime);
+	    			timeInfo = localtime(&currentTime);
+	    			strftime (timeString,80, "[%c]", timeInfo);
+
+					FILE *logfile = fopen(PROCNANNYLOGS, "a");
+					strtok(procPID,"\n");
+					fprintf(logfile, "[%s] Action:PID %d (%s) killed after %d seconds.\n",timeString, processList[processCounter].processID, processList[processCounter].name, processList[processCounter].time);
+					fflush(logfile);
+					fclose(logfile);
+					exit(EXIT_SUCCESS);
+				}
+				else{
+					    if (signal(SIGINT, sig_handler) == SIG_ERR){
+	        				printf("\ncan't catch SIGINT\n");
+					    }
+	    				if (signal(SIGHUP, sig_handler) == SIG_ERR){
+	        				printf("\ncan't catch SIGKILL\n");
+	    				}
+					numberProcessesKilled++;
+				} 
+				processCounter++;
+				wait(NULL);
 			}
-			else{
-				    if (signal(SIGINT, sig_handler) == SIG_ERR){
-        				printf("\ncan't catch SIGINT\n");
-				    }
-    				if (signal(SIGHUP, sig_handler) == SIG_ERR){
-        				printf("\ncan't catch SIGKILL\n");
-    				}
-				numberProcessesKilled++;
-			} 
-			processCounter++;
+
+			if(found == 0){
+				//if no process found
+				time(&currentTime);
+	    		timeInfo = localtime(&currentTime);
+	    		strftime (timeString,80, "[%c]", timeInfo);
+
+				FILE *logfile = fopen(PROCNANNYLOGS, "a");
+				fprintf(logfile, "[%s] Info: No '%s' processes found.\n",timeString,processName);
+				fclose(logfile);
+			}
+			
+		}
+		int status;
+
+		int j;
+
+		wait(&status);
+
+		for (j= 0; j <= numberProcessesKilled + counter; j++){
 			wait(NULL);
 		}
 
-		if(found == 0){
-			//if no process found
-			time(&currentTime);
-    		timeInfo = localtime(&currentTime);
-    		strftime (timeString,80, "[%c]", timeInfo);
-
-			FILE *logfile = fopen(PROCNANNYLOGS, "a");
-			fprintf(logfile, "[%s] Info: No '%s' processes found.\n",timeString,processName);
-			fclose(logfile);
+		int exited = WIFEXITED(status);
+		while (!exited) {
+			wait(&status);
+			exited = WIFEXITED(status);
 		}
-		
-	}
-	int status;
-
-	int j;
-
-	wait(&status);
-
-	for (j= 0; j <= numberProcessesKilled + counter; j++){
-		wait(NULL);
 	}
 
-	int exited = WIFEXITED(status);
-	while (!exited) {
-		wait(&status);
-		exited = WIFEXITED(status);
-	}
-	time(&currentTime);
-    timeInfo = localtime(&currentTime);
-    strftime (timeString,80, "[%c]", timeInfo);
-
-	FILE *logfile = fopen(PROCNANNYLOGS, "a");
-	fprintf(logfile, "[%s] Info: Exiting. %d  process(es) killed.\n",timeString,numberProcessesKilled);
-	fclose(logfile);
 }
 
 void killOtherProcnanny(){
@@ -209,8 +205,22 @@ void killOtherProcnanny(){
 }
 
 void sig_handler(int signo){
-  if (signo == SIGINT)
+	time_t currentTime;
+	struct tm *timeInfo;
+    char timeString[80];
+
+	time(&currentTime);
+    timeInfo = localtime(&currentTime);
+    strftime (timeString,80, "[%c]", timeInfo);
+
+  if (signo == SIGINT){
     printf("received SIGINT\n");
-  if (signo == SIGHUP)
+
+    FILE *logfile = fopen(PROCNANNYLOGS, "a");
+	fprintf(logfile, "[%s] Info: Exiting. %d  process(es) killed.\n",timeString,numberProcessesKilled);
+	fclose(logfile);
+	}
+  if (signo == SIGHUP){
     printf("received SIGHUP\n");
+    }
 }
