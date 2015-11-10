@@ -26,8 +26,9 @@ struct process
 };
 
 void killOtherProcnanny();
+void sig_handler(int signo);
 
-int main(int argc, char *argv[])
+void main(int argc, char *argv[])
 {
 	//initial configuration
 	char fileInput[128][256];
@@ -141,7 +142,7 @@ int main(int argc, char *argv[])
 			}
 			else{
 				    if (signal(SIGINT, sig_handler) == SIG_ERR){
-        				printf("\ncan't catch SIGUSR1\n");
+        				printf("\ncan't catch SIGINT\n");
 				    }
     				if (signal(SIGHUP, sig_handler) == SIG_ERR){
         				printf("\ncan't catch SIGKILL\n");
@@ -186,7 +187,6 @@ int main(int argc, char *argv[])
 	FILE *logfile = fopen(PROCNANNYLOGS, "a");
 	fprintf(logfile, "[%s] Info: Exiting. %d  process(es) killed.\n",timeString,numberProcessesKilled);
 	fclose(logfile);
-	return 0;
 }
 
 void killOtherProcnanny(){

@@ -1,5 +1,4 @@
-[[Thu Oct 29 18:52:05 2015]] Info: Initializing monitoring of process 'firefox'(PID 13835).
-[[Thu Oct 29 18:52:05 2015]] Info: No 'a.out' processes found.
-[[Thu Oct 29 18:52:05 2015]] Info: No 'test' processes found.
-[[Thu Oct 29 18:52:11 2015]] Action:PID 13835 (firefox) killed after 6 seconds.
-[[Thu Oct 29 18:52:11 2015]] Info: Exiting. 1  process(es) killed.
+[[Mon Nov  9 18:38:33 2015]] Info: No 'firefox' processes found.
+[[Mon Nov  9 18:38:33 2015]] Info: No 'a.out' processes found.
+[[Mon Nov  9 18:38:33 2015]] Info: No 'test' processes found.
+[[Mon Nov  9 18:38:33 2015]] Info: Exiting. 0  process(es) killed.
